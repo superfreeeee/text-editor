@@ -30,13 +30,10 @@ impl Editor {
             match read() {
                 Ok(Key(event)) => {
                     println!("{event:?} \r");
-                    match event.code {
-                        Char(c) => {
-                            if c == 'q' {
-                                break;
-                            }
+                    if let Char(c) = event.code {
+                        if c == 'q' {
+                            break;
                         }
-                        _ => (),
                     }
                 }
                 Err(err) => println!("Error: {err}"),
