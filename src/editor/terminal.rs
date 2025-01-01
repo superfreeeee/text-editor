@@ -1,7 +1,8 @@
 use crossterm::cursor::{Hide, MoveTo, Show};
-use crossterm::queue;
 use crossterm::style::Print;
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode, size, Clear, ClearType};
+use crossterm::{queue, Command};
+use std::fmt::Display;
 use std::io::{stdout, Error, Write};
 
 #[derive(Copy, Clone)]
@@ -21,46 +22,38 @@ pub struct Terminal;
 impl Terminal {
     pub fn terminate() -> Result<(), Error> {
         Self::execute()?;
-        disable_raw_mode()?;
-        Ok(())
+        disable_raw_mode()
     }
 
     pub fn initialize() -> Result<(), Error> {
         enable_raw_mode()?;
         Self::clear_screen()?;
         Self::move_cursor_to(Position { x: 0, y: 0 })?;
-        Self::execute()?;
-        Ok(())
+        Self::execute()
     }
 
     pub fn clear_screen() -> Result<(), Error> {
-        queue!(stdout(), Clear(ClearType::All))?;
-        Ok(())
+        Self::queue_command(Clear(ClearType::All))
     }
 
     pub fn clear_line() -> Result<(), Error> {
-        queue!(stdout(), Clear(ClearType::CurrentLine))?;
-        Ok(())
+        Self::queue_command(Clear(ClearType::CurrentLine))
     }
 
     pub fn move_cursor_to(position: Position) -> Result<(), Error> {
-        queue!(stdout(), MoveTo(position.x, position.y))?;
-        Ok(())
+        Self::queue_command(MoveTo(position.x, position.y))
     }
 
     pub fn hide_cursor() -> Result<(), Error> {
-        queue!(stdout(), Hide)?;
-        Ok(())
+        Self::queue_command(Hide)
     }
 
     pub fn show_cursor() -> Result<(), Error> {
-        queue!(stdout(), Show)?;
-        Ok(())
+        Self::queue_command(Show)
     }
 
-    pub fn print(string: &str) -> Result<(), Error> {
-        queue!(stdout(), Print(string))?;
-        Ok(())
+    pub fn print<T: Display>(string: T) -> Result<(), Error> {
+        Self::queue_command(Print(string))
     }
 
     pub fn size() -> Result<Size, Error> {
@@ -69,7 +62,10 @@ impl Terminal {
     }
 
     pub fn execute() -> Result<(), Error> {
-        stdout().flush()?;
-        Ok(())
+        stdout().flush()
+    }
+
+    fn queue_command<T: Command>(command: T) -> Result<(), Error> {
+        queue!(stdout(), command)
     }
 }
