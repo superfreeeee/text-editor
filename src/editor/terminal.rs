@@ -9,8 +9,8 @@ use std::io::{stdout, Error, Write};
 
 #[derive(Copy, Clone, Default)]
 pub struct Size {
-    pub width: usize,
     pub height: usize,
+    pub width: usize,
 }
 
 #[derive(Copy, Clone, Default)]

@@ -1,5 +1,4 @@
-use super::terminal::{Position, Size, Terminal};
-use std::io::Error;
+use super::terminal::{Size, Terminal};
 
 mod buffer;
 use buffer::Buffer;
