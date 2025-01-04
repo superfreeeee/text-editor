@@ -60,13 +60,11 @@ impl Terminal {
     }
 
     pub fn enter_alternate_screen() -> Result<(), Error> {
-        Self::queue_command(EnterAlternateScreen)?;
-        Ok(())
+        Self::queue_command(EnterAlternateScreen)
     }
 
     pub fn leave_alternate_screen() -> Result<(), Error> {
-        Self::queue_command(LeaveAlternateScreen)?;
-        Ok(())
+        Self::queue_command(LeaveAlternateScreen)
     }
 
     pub fn hide_caret() -> Result<(), Error> {
