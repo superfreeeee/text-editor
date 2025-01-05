@@ -1,5 +1,5 @@
-use std::fs::read_to_string;
-use std::io::Error;
+use std::fs::{read_to_string, File};
+use std::io::{Error, ErrorKind, Write};
 
 use super::line::Line;
 use super::Location;
@@ -7,6 +7,7 @@ use super::Location;
 #[derive(Default)]
 pub struct Buffer {
     pub lines: Vec<Line>,
+    file_name: Option<String>,
 }
 
 impl Buffer {
@@ -16,7 +17,22 @@ impl Buffer {
         for value in contents.lines() {
             lines.push(Line::from(value));
         }
-        Ok(Self { lines })
+        Ok(Self {
+            lines,
+            file_name: Some(file_name.to_string()),
+        })
+    }
+
+    pub fn save(&self) -> Result<(), Error> {
+        if let Some(file_name) = &self.file_name {
+            let mut file = File::create(file_name)?;
+            for (index, line) in self.lines.iter().enumerate() {
+                writeln!(file, "{index}. {line}")?;
+            }
+            Ok(())
+        } else {
+            Err(Error::new(ErrorKind::AddrNotAvailable, "missing file_name"))
+        }
     }
 
     pub fn is_empty(&self) -> bool {
