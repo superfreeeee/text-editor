@@ -16,6 +16,7 @@ pub enum Direction {
 pub enum EditorCommand {
     Move(Direction),
     Resize(Size),
+    Insert(char),
     Quit,
 }
 
@@ -28,25 +29,31 @@ impl TryFrom<Event> for EditorCommand {
                 code, modifiers, ..
             }) => match (code, modifiers) {
                 (KeyCode::Char('q'), KeyModifiers::CONTROL) => Ok(Self::Quit),
+                (KeyCode::Char(character), KeyModifiers::NONE | KeyModifiers::SHIFT) => {
+                    Ok(Self::Insert(character))
+                }
                 (KeyCode::Up, _) => Ok(Self::Move(Direction::Up)),
                 (KeyCode::Down, _) => Ok(Self::Move(Direction::Down)),
                 (KeyCode::Left, _) => Ok(Self::Move(Direction::Left)),
                 (KeyCode::Right, _) => Ok(Self::Move(Direction::Right)),
-                (KeyCode::PageDown, _) | (KeyCode::Char('d'), _) => Ok(Self::Move(Direction::PageDown)),
-                (KeyCode::PageUp, _) | (KeyCode::Char('u'), _) => Ok(Self::Move(Direction::PageUp)),
-                (KeyCode::Home, _) | (KeyCode::Char('h'), _) => Ok(Self::Move(Direction::Home)),
-                (KeyCode::End, _) | (KeyCode::Char('e'), _) => Ok(Self::Move(Direction::End)),
+                (KeyCode::PageDown, _) | (KeyCode::Char('d'), KeyModifiers::CONTROL) => {
+                    Ok(Self::Move(Direction::PageDown))
+                }
+                (KeyCode::PageUp, _) | (KeyCode::Char('u'), KeyModifiers::CONTROL) => {
+                    Ok(Self::Move(Direction::PageUp))
+                }
+                (KeyCode::Home, _) | (KeyCode::Char('h'), KeyModifiers::CONTROL) => {
+                    Ok(Self::Move(Direction::Home))
+                }
+                (KeyCode::End, _) | (KeyCode::Char('e'), KeyModifiers::CONTROL) => {
+                    Ok(Self::Move(Direction::End))
+                }
                 _ => Err(format!("Key Code not supported: {code:?}")),
             },
-            Event::Resize(width_u16, height_u16) => {
-                // clippy::as_conversions: Will run into problems for rare edge case systems where usize < u16
-                #[allow(clippy::as_conversions)]
-                let height = height_u16 as usize;
-                // clippy::as_conversions: Will run into problems for rare edge case systems where usize < u16
-                #[allow(clippy::as_conversions)]
-                let width = width_u16 as usize;
-                Ok(Self::Resize(Size { height, width }))
-            }
+            Event::Resize(width_u16, height_u16) => Ok(Self::Resize(Size {
+                height: height_u16 as usize,
+                width: width_u16 as usize,
+            })),
             _ => Err(format!("Event not supported: {event:?}")),
         }
     }
